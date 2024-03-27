@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Search from './components/Search'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
@@ -9,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [notification, setNotification] = useState({})
 
   useEffect(() => {
     personService.getAll()
@@ -18,6 +20,18 @@ const App = () => {
   const searchedPersons = persons.filter(person =>
     person.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const setRemovedPerson = (id) => setPersons(persons.filter(person => person.id !== id))
+
+  const notifySuccess = (msg) => {
+    setNotification({ type: 'success', msg })
+    setTimeout(() => setNotification({}), 4000)
+  }
+
+  const notifyError = (msg) => {
+    setNotification({ type: 'error', msg })
+    setTimeout(() => setNotification({}), 4000)
+  }
 
   const handleAddClick = (event) => {
     event.preventDefault()
@@ -39,10 +53,16 @@ const App = () => {
           person.id !== updatedPerson.id
             ? person
             : updatedPerson)))
+        .then(() => notifySuccess(`Updated ${newName}`))
+        .catch(() => {
+          setRemovedPerson(personToUpdate.id)
+          notifyError(`Information of ${newName} has been removed from server`)
+        })
     }
     else {
       personService.create(newPerson)
         .then(person => setPersons(persons.concat(person)))
+        .then(() => notifySuccess(`Added ${newName}`))
     }
   }
 
@@ -50,14 +70,17 @@ const App = () => {
     const person = persons.find(person => person.id === id)
 
     if (window.confirm(`Delete ${name}?`)) {
+      setRemovedPerson(id)
       personService.remove(id)
-        .then(() => setPersons(persons.filter(person => person.id !== id)))
+        .then(() => notifySuccess(`Removed ${name}`))
+        .catch(() => notifyError(`Information of ${name} was already removed from server`))
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification.msg} type={notification.type} />
       <Search
         searchTerm={searchTerm}
         setSearchTerm={(event) => setSearchTerm(event.target.value)}
