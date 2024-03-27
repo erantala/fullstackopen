@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import Search from './components/Search'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
-
-const notesService = 'http://localhost:3001/persons'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -13,26 +11,48 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    axios.get(notesService).then(response => {
-      setPersons(response.data)
-    })
+    personService.getAll()
+      .then(persons => setPersons(persons))
   }, [])
 
   const searchedPersons = persons.filter(person =>
     person.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleClick = (event) => {
+  const handleAddClick = (event) => {
     event.preventDefault()
 
-    if (persons.find(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
+    const newPerson = { name: newName, number: newNumber }
+    const personToUpdate = persons.find(person => person.name === newName)
+
+    if (personToUpdate) {
+      if (!window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`))
+        return
     }
 
     setNewName('')
     setNewNumber('')
-    setPersons(persons.concat({ name: newName, number: newNumber }))
+
+    if (personToUpdate) {
+      personService.update(personToUpdate.id, newPerson)
+        .then(updatedPerson => setPersons(persons.map(person =>
+          person.id !== updatedPerson.id
+            ? person
+            : updatedPerson)))
+    }
+    else {
+      personService.create(newPerson)
+        .then(person => setPersons(persons.concat(person)))
+    }
+  }
+
+  const handleDeleteClick = (id, name) => {
+    const person = persons.find(person => person.id === id)
+
+    if (window.confirm(`Delete ${name}?`)) {
+      personService.remove(id)
+        .then(() => setPersons(persons.filter(person => person.id !== id)))
+    }
   }
 
   return (
@@ -49,11 +69,11 @@ const App = () => {
         setNewName={(event) => setNewName(event.target.value)}
         newNumber={newNumber}
         setNewNumber={(event) => setNewNumber(event.target.value)}
-        handleClick={handleClick}
+        handleClick={handleAddClick}
       />
 
       <h2>Numbers</h2>
-      <Persons persons={searchedPersons} />
+      <Persons persons={searchedPersons} deleteAction={handleDeleteClick} />
     </div>
   )
 
