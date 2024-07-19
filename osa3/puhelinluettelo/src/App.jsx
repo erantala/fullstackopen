@@ -54,15 +54,27 @@ const App = () => {
             ? person
             : updatedPerson)))
         .then(() => notifySuccess(`Updated ${newName}`))
-        .catch(() => {
-          setRemovedPerson(personToUpdate.id)
-          notifyError(`Information of ${newName} has been removed from server`)
+        .catch((error) => {
+          switch (error.request.status) {
+            case 404:
+              setRemovedPerson(personToUpdate.id)
+              notifyError(`Information of ${newName} has been removed from server`)
+              break
+            case 400:
+              notifyError(error.response.data.error)
+              break
+            default:
+              notifyError(error.message)
+            }
         })
     }
     else {
       personService.create(newPerson)
         .then(person => setPersons(persons.concat(person)))
         .then(() => notifySuccess(`Added ${newName}`))
+        .catch(error => {
+          notifyError(error.response.data.error)
+        })
     }
   }
 
