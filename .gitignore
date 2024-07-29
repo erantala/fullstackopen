@@ -131,3 +131,5 @@ dist
 
 # VSCode project specific confs
 .vscode
+
+.rest
