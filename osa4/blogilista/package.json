@@ -4,7 +4,7 @@
   "description": "Fullstack Open -course at Helsinki University",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "dev": "nodemon index.js"
   },
   "author": "Eero Rantala",
