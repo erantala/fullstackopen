@@ -74,3 +74,26 @@ describe('most blogs', () => {
     })
   })
 })
+
+describe('most likes', () => {
+  test('of empty list is null', () => {
+    const result = listHelper.mostLikes([])
+    assert.strictEqual(result, null)
+  })
+
+  test('when list has only one blog equals that', () => {
+    const result = listHelper.mostLikes([blogs.tddHarmsArchitecture])
+    assert.deepStrictEqual(result, {
+      author: 'Robert C. Martin',
+      likes: 0
+    })
+  })
+
+  test('of a bigger list is the author with most blogs', () => {
+    const result = listHelper.mostLikes(blogs.ALL)
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      likes: 17
+    })
+  })
+})

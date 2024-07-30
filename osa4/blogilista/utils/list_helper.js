@@ -40,3 +40,21 @@ exports.mostBlogs = blogs => {
     }, initialValue)
   return authorWithMostBlogs
 }
+
+exports.mostLikes = blogs => {
+  if (blogs.length === 0) {
+    return null
+  }
+
+  const authors = blogs.reduce((authors, blog) => {
+    authors[blog.author] = authors[blog.author] ? authors[blog.author] + blog.likes : blog.likes
+    return authors
+  }, {})
+
+  const initialValue = { author: '', likes: 0 }
+  const authorWithMostLikes = Object.entries(authors).reduce(
+    (authorWithMostLikes, [author, likes]) => {
+      return authorWithMostLikes.likes > likes ? authorWithMostLikes : { author, likes }
+    }, initialValue)
+  return authorWithMostLikes
+}
