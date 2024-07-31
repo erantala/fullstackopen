@@ -39,16 +39,61 @@ describe('blogilistan testit', () => {
     const cantParseHtml = {
       title: 'You can\'t parse [X]HTML with regex',
       author: 'bobince',
-      url: 'https://stackoverflow.com/a/1732454'
+      url: 'https://stackoverflow.com/a/1732454',
+      likes: 4397
     }
 
-    const newBlog = new Blog(cantParseHtml)
-    await newBlog.save()
+    const postResponse = await api
+      .post('/api/blogs')
+      .send(cantParseHtml)
+      .expect(201)
 
-    const allBlogs = await Blog.find({})
-    assert.strictEqual(allBlogs.length, blogs.ALL.length + 1)
-    const blogTitles = allBlogs.map(blog => blog.title)
+    const allBlogs = await api
+      .get('/api/blogs')
+      .expect(200)
+
+    assert.strictEqual(allBlogs.body.length, blogs.ALL.length + 1)
+    const blogTitles = allBlogs.body.map(blog => blog.title)
     assert(blogTitles.includes('You can\'t parse [X]HTML with regex'))
+  })
+
+  test('jos kentälle likes ei anneta arvoa, asetetaan sen arvoksi 0', async () => {
+    const dummyWithoutLikes = {
+      title: 't',
+      author: 'a',
+      url: 'u'
+    }
+
+    const postResponse = await api
+      .post('/api/blogs')
+      .send(dummyWithoutLikes)
+      .expect(201)
+
+    assert.strictEqual(postResponse.body.likes, 0)
+  })
+
+  test('lisäys ei mene läpi jos kenttää "title" ei ole annettu', async () => {
+    const dummyWithoutTitle = {
+      author: 'a',
+      url: 'u'
+    }
+
+    const failResponse = await api
+      .post('/api/blogs')
+      .send(dummyWithoutTitle)
+      .expect(400)
+  })
+
+  test('lisäys ei mene läpi jos kenttää "url" ei ole annettu', async () => {
+    const dummyWithoutUrl = {
+      title: 't',
+      author: 'a'
+    }
+
+    const failResponse = await api
+      .post('/api/blogs')
+      .send(dummyWithoutUrl)
+      .expect(400)
   })
 
   after(async () => {
