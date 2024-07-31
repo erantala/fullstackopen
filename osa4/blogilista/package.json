@@ -4,8 +4,9 @@
   "description": "Fullstack Open -course at Helsinki University",
   "main": "index.js",
   "scripts": {
-    "test": "node --test",
-    "dev": "nodemon index.js"
+    "test": "NODE_ENV=test node --test",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "start": "NODE_ENV=production node index.js"
   },
   "author": "Eero Rantala",
   "license": "ISC",
@@ -13,7 +14,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
     "mongoose": "^8.5.1",
     "nodemon": "^3.1.4"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
   }
 }
