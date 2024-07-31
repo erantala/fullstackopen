@@ -21,12 +21,21 @@ describe('blogilistan testit', () => {
       .expect('Content-Type', /application\/json/)
 
     assert.strictEqual(response.body.length, blogs.ALL.length)
+  })
 
-    console.log('happy path test passed')
+  test('blogin id-kenttä on nimeltään "id"', async () => {
+    const response = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const firstBlog = response.body[0]
+    assert(firstBlog.id)
+    assert.strictEqual(firstBlog.id.length, 24)
+    assert(firstBlog.id.match(/^[0-9a-f]+$/))
   })
 
   after(async () => {
-    console.log('closing mongoose connection')
     await mongoose.connection.close()
     console.log('mongoose connection closed')
   })
