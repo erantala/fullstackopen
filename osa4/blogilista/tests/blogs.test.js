@@ -35,69 +35,99 @@ describe('blogilistan testit', () => {
     assert(firstBlog.id.match(/^[0-9a-f]+$/))
   })
 
-  test('kantaan voi lisätä blogeja', async () => {
-    const cantParseHtml = {
-      title: 'You can\'t parse [X]HTML with regex',
-      author: 'bobince',
-      url: 'https://stackoverflow.com/a/1732454',
-      likes: 4397
-    }
+  describe('blogin lisäys', () => {
+    test('kantaan voi lisätä blogeja', async () => {
+      const cantParseHtml = {
+        title: 'You can\'t parse [X]HTML with regex',
+        author: 'bobince',
+        url: 'https://stackoverflow.com/a/1732454',
+        likes: 4397
+      }
 
-    const postResponse = await api
-      .post('/api/blogs')
-      .send(cantParseHtml)
-      .expect(201)
+      const postResponse = await api
+        .post('/api/blogs')
+        .send(cantParseHtml)
+        .expect(201)
 
-    const allBlogs = await api
-      .get('/api/blogs')
-      .expect(200)
+      const allBlogs = await api
+        .get('/api/blogs')
+        .expect(200)
 
-    assert.strictEqual(allBlogs.body.length, blogs.ALL.length + 1)
-    const blogTitles = allBlogs.body.map(blog => blog.title)
-    assert(blogTitles.includes('You can\'t parse [X]HTML with regex'))
+      assert.strictEqual(allBlogs.body.length, blogs.ALL.length + 1)
+      const blogTitles = allBlogs.body.map(blog => blog.title)
+      assert(blogTitles.includes('You can\'t parse [X]HTML with regex'))
+    })
+
+    test('jos kentälle likes ei anneta arvoa, asetetaan sen arvoksi 0', async () => {
+      const dummyWithoutLikes = {
+        title: 't',
+        author: 'a',
+        url: 'u'
+      }
+
+      const postResponse = await api
+        .post('/api/blogs')
+        .send(dummyWithoutLikes)
+        .expect(201)
+
+      assert.strictEqual(postResponse.body.likes, 0)
+    })
+
+    test('lisäys ei mene läpi jos kenttää "title" ei ole annettu', async () => {
+      const dummyWithoutTitle = {
+        author: 'a',
+        url: 'u'
+      }
+
+      const failResponse = await api
+        .post('/api/blogs')
+        .send(dummyWithoutTitle)
+        .expect(400)
+    })
+
+    test('lisäys ei mene läpi jos kenttää "url" ei ole annettu', async () => {
+      const dummyWithoutUrl = {
+        title: 't',
+        author: 'a'
+      }
+
+      const failResponse = await api
+        .post('/api/blogs')
+        .send(dummyWithoutUrl)
+        .expect(400)
+    })
   })
 
-  test('jos kentälle likes ei anneta arvoa, asetetaan sen arvoksi 0', async () => {
-    const dummyWithoutLikes = {
-      title: 't',
-      author: 'a',
-      url: 'u'
-    }
+  describe('blogin poisto', () => {
+    test('yksittäisen blogin poisto onnistuu', async () => {
+      const deleteResponse = await api
+        .delete(`/api/blogs/${blogs.firstClassTests._id}`)
+        .expect(204)
 
-    const postResponse = await api
-      .post('/api/blogs')
-      .send(dummyWithoutLikes)
-      .expect(201)
+      const notFoundAnymore = await Blog.findById(blogs.firstClassTests._id)
+      assert(!notFoundAnymore)
+    })
 
-    assert.strictEqual(postResponse.body.likes, 0)
-  })
+    describe('blogin muokkaus', () => {
+      test('yksittäisen blogin muokkaus onnistuu', async () => {
+        const updateBlog = {
+          title: blogs.reactPatterns.title,
+          author: blogs.reactPatterns.author,
+          likes: blogs.reactPatterns.likes + 1
+        }
 
-  test('lisäys ei mene läpi jos kenttää "title" ei ole annettu', async () => {
-    const dummyWithoutTitle = {
-      author: 'a',
-      url: 'u'
-    }
+        const updatedBlog = await api
+          .put(`/api/blogs/${blogs.reactPatterns._id}`)
+          .send(updateBlog)
+          .expect(200)
 
-    const failResponse = await api
-      .post('/api/blogs')
-      .send(dummyWithoutTitle)
-      .expect(400)
-  })
+        assert.strictEqual(updatedBlog.body.likes, blogs.reactPatterns.likes + 1)
+      })
+    })
 
-  test('lisäys ei mene läpi jos kenttää "url" ei ole annettu', async () => {
-    const dummyWithoutUrl = {
-      title: 't',
-      author: 'a'
-    }
-
-    const failResponse = await api
-      .post('/api/blogs')
-      .send(dummyWithoutUrl)
-      .expect(400)
-  })
-
-  after(async () => {
-    await mongoose.connection.close()
-    console.log('mongoose connection closed')
+    after(async () => {
+      await mongoose.connection.close()
+      console.log('mongoose connection closed')
+    })
   })
 })
