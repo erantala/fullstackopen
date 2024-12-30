@@ -129,7 +129,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# VSCode project specific confs
+# IDE project specific confs
+.idea
 .vscode
 
 .rest
