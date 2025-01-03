@@ -23,7 +23,7 @@ const errorHandler = (error, request, response, next) => {
     } else if (error.name === 'ValidationError') {
         return response.status(400).json({error: error.message})
     } else if (error.name = 'MongoServerError') {
-        if (error.errmsg.startsWith('E11000 duplicate key error collection')) {
+        if (error.errmsg && error.errmsg.startsWith('E11000 duplicate key error collection')) {
             return response.status(400).json({error: 'expected `username` to be unique'})
         } else {
             return response.status(400).json({error: 'unexpected Mongo server error'})
