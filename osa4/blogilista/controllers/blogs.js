@@ -9,27 +9,12 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 blogsRouter.post('/', async (request, response) => {
-  const getTokenFrom = () => {
-    const authorization = request.get('authorization')
-    if (authorization && authorization.startsWith('Bearer ')) {
-      return authorization.replace('Bearer ', '')
-    }
-    return null
-  }
-
   const body = request.body
-  const authenticationToken = getTokenFrom()
-  if (authenticationToken === null) {
-    return response.status(401).json({ error: 'token missing, expected authorization type Bearer' })
+
+  if (request.token === null || request.token.id === undefined) {
+    return response.status(401).json({ error: 'token required' })
   }
-  let decodedToken = null
-  try {
-    decodedToken = jwt.verify(getTokenFrom(), process.env.SECRET)
-    decodedToken.id.throwErrorIfUndefined
-  } catch {
-    return response.status(401).json({ error: 'invalid jwt token'})
-  }
-  const user = await User.findById(decodedToken.id)
+  const user = await User.findById(request.token.id)
   if (user === null) {
     return response.status(401).json({ error: 'user not found'})
   }
