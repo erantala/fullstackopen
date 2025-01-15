@@ -1,6 +1,5 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
-const User = require('../models/user')
 const middleware = require("../utils/middleware");
 
 blogsRouter.get('/', async (request, response) => {
@@ -10,14 +9,10 @@ blogsRouter.get('/', async (request, response) => {
 
 // APIS REQUIRING TOKEN
 blogsRouter.use(middleware.tokenExtractor)
+blogsRouter.use(middleware.userExtractor)
 
 blogsRouter.post('/', async (request, response) => {
-  const body = request.body
-
-  const user = await User.findById(request.token.id)
-  if (user === null) {
-    return response.status(401).json({ error: 'user not found'})
-  }
+  const user = request.user
 
   const blog = new Blog(
       {
@@ -33,10 +28,7 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  const user = await User.findById(request.token.id)
-  if (user === null) {
-    return response.status(401).json({ error: 'user not found'})
-  }
+  const user = request.user
 
   const blog = await Blog.findById(request.params.id)
   if (blog.user.toString() !== user.id.toString()) {

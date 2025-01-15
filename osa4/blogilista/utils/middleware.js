@@ -1,5 +1,6 @@
 const logger = require('./logger')
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
 const requestLogger = (request, response, next) => {
     if (process.env.NODE_ENV === 'test') {
@@ -45,10 +46,20 @@ const tokenExtractor = (request, response, next) => {
         request.token = null
     }
 
+    next()
+}
+
+const userExtractor = async (request, response, next) => {
     if (request.token === null || request.token.id === undefined) {
         return response.status(401).json({ error: 'token required' })
     }
 
+    const user = await User.findById(request.token.id)
+    if (user === null) {
+        return response.status(401).json({ error: 'user not found'})
+    }
+
+    request.user = user
     next()
 }
 
@@ -56,5 +67,6 @@ module.exports = {
     requestLogger,
     unknownEndpoint,
     errorHandler,
-    tokenExtractor
+    tokenExtractor,
+    userExtractor
 }
