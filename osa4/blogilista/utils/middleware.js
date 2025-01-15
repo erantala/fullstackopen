@@ -40,12 +40,15 @@ const tokenExtractor = (request, response, next) => {
     let authorizationHeaderContent = request.get('authorization')
     if (authorizationHeaderContent && authorizationHeaderContent.startsWith('Bearer ')) {
         authorizationHeaderContent = authorizationHeaderContent.replace('Bearer ', '')
+        request.token = jwt.verify(authorizationHeaderContent, process.env.SECRET)
     } else {
         request.token = null
-        return next()
     }
 
-    request.token = jwt.verify(authorizationHeaderContent, process.env.SECRET)
+    if (request.token === null || request.token.id === undefined) {
+        return response.status(401).json({ error: 'token required' })
+    }
+
     next()
 }
 
