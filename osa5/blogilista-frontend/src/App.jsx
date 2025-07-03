@@ -2,10 +2,12 @@ import {useState, useEffect} from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Notification from "./components/Notification.jsx";
 
 const emptyBlog = {title: '', author: '', url: ''}
 
 const App = () => {
+    const [notification, setNotification] = useState(null)
     const [blogs, setBlogs] = useState([])
     const [blogInput, setBlogInput] = useState(emptyBlog)
     const [username, setUsername] = useState('')
@@ -26,6 +28,16 @@ const App = () => {
         }
     }, []);
 
+    const notifySuccess = (message) => {
+        setNotification({type: 'success', message})
+        setTimeout(() => setNotification(null), 4000)
+    }
+
+    const notifyError = (message) => {
+        setNotification({type: 'error', message})
+        setTimeout(() => setNotification(null), 4000)
+    }
+
     const handleLogin = async (event) => {
         event.preventDefault()
         console.log('logging in with', username, password)
@@ -39,8 +51,10 @@ const App = () => {
             setUser(user)
             setUsername('')
             setPassword('')
+            notifySuccess('login successful')
         } catch (exception) {
             console.log('wrong credentials')
+            notifyError('wrong credentials')
         }
     }
 
@@ -48,6 +62,7 @@ const App = () => {
         window.localStorage.removeItem('loggedUser')
         setUser(null)
         blogService.setToken(null)
+        notifySuccess('logged out successfully')
     }
 
     const createBlog = (event) => {
@@ -63,7 +78,9 @@ const App = () => {
             .then(newBlog => {
                 setBlogs(blogs => blogs.concat(newBlog))
                 setBlogInput(emptyBlog)
+                notifySuccess('new blog added')
             })
+            .catch(() => notifyError('creating blog failed'))
     }
 
     const handleBlogChange = ({target}) => {
@@ -81,7 +98,7 @@ const App = () => {
                 value={username}
                 name="username"
                 onChange={({target}) => setUsername(target.value)}
-            />
+            /><br />
             <label>password:</label>&nbsp;
             <input
                 type="password"
@@ -107,15 +124,16 @@ const App = () => {
         </form>
     )
 
+    let pageView
+
     if (user === null) {
-        return (
+        pageView = (
             <div>
                 <h2>Log in to application</h2>
                 {loginForm()}
-            </div>
-        )
+            </div>)
     } else {
-        return (
+        pageView = (
             <div>
                 <div>
                     <span>{user.name} logged in </span>
@@ -131,6 +149,15 @@ const App = () => {
             </div>
         )
     }
+
+    return (
+        <>
+            <Notification notification={notification}/>
+            {
+                pageView
+            }
+        </>
+    )
 
 }
 
