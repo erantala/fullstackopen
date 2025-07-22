@@ -1,10 +1,15 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
-const Blog = ({blog}) => {
+const Blog = ({blog, updateFcn}) => {
     const [showDetails, setShowDetails] = useState(false);
+    const [likes, setLikes] = useState(blog.likes);
+
+    useEffect(() => {
+        setLikes(blog.likes);
+    }, [blog]);
 
     const userFullName = (user) => {
-        return user ? user.name : (<span className='error' >Unknown User</span>);
+        return user ? user.name : (<span className='error'>Unknown User</span>);
     };
 
     return (
@@ -16,8 +21,13 @@ const Blog = ({blog}) => {
             {showDetails &&
                 <div>
                     {blog.url}<br/>
-                    likes {blog.likes}&nbsp;
-                    <button>like</button>
+                    likes {likes}&nbsp;
+                    <button onClick={() => {
+                        updateFcn(blog.id, {...blog, likes: likes + 1});
+                        setLikes(likes + 1);
+                    }}>
+                        like
+                    </button>
                     <br/>
                     {userFullName(blog.user)}
                 </div>

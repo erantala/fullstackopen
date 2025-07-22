@@ -26,6 +26,7 @@ const App = () => {
         if (loggedUserJSON) {
             const user = JSON.parse(loggedUserJSON)
             setUser(user)
+            blogService.setToken(user.token)
         }
     }, []);
 
@@ -78,6 +79,18 @@ const App = () => {
             .catch(() => notifyError('creating blog failed'))
     }
 
+    const updateBlog = (id, blogObject) => {
+        console.log('updating blog', id, blogObject)
+        blogService
+            .update(id, blogObject)
+            .catch(() => {
+                notifyError('like failed - reloading blogs')
+                blogService.getAll().then(blogs => {
+                    setBlogs(blogs)
+                })
+            })
+    }
+
     const loginForm = () => (
         <form onSubmit={handleLogin}>
             <label>username:</label>&nbsp;
@@ -119,7 +132,7 @@ const App = () => {
                     <BlogCreation submitBlog={createBlog} />
                 </Togglable>
                 {blogs.map(blog =>
-                    <Blog key={blog.id} blog={blog}/>
+                    <Blog key={blog.id} blog={blog} updateFcn={updateBlog}/>
                 )}
             </div>
         )
