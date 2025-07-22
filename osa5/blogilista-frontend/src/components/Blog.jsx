@@ -1,12 +1,7 @@
-import {useState, useEffect} from "react";
+import {useState} from "react";
 
-const Blog = ({blog, updateFcn}) => {
+const Blog = ({blog, incrementLikesFcn}) => {
     const [showDetails, setShowDetails] = useState(false);
-    const [likes, setLikes] = useState(blog.likes);
-
-    useEffect(() => {
-        setLikes(blog.likes);
-    }, [blog]);
 
     const userFullName = (user) => {
         return user ? user.name : (<span className='error'>Unknown User</span>);
@@ -21,11 +16,8 @@ const Blog = ({blog, updateFcn}) => {
             {showDetails &&
                 <div>
                     {blog.url}<br/>
-                    likes {likes}&nbsp;
-                    <button onClick={() => {
-                        updateFcn(blog.id, {...blog, likes: likes + 1});
-                        setLikes(likes + 1);
-                    }}>
+                    likes {blog.likes}&nbsp;
+                    <button onClick={() => incrementLikesFcn(blog.id)}>
                         like
                     </button>
                     <br/>

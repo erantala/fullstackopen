@@ -22,7 +22,6 @@ const create = async newObject => {
 }
 
 const update = async (id, newObject) => {
-    console.log('the bloody object', newObject)
     const config = {
         headers: {Authorization: token}
     }

@@ -15,9 +15,11 @@ const App = () => {
 
     const blogFormRef = useRef()
 
+    const sortBlogs = (blogs) => blogs.sort((a, b) => b.likes - a.likes)
+
     useEffect(() => {
         blogService.getAll().then(blogs =>
-            setBlogs(blogs)
+            setBlogs(sortBlogs(blogs))
         )
     }, [])
 
@@ -79,8 +81,16 @@ const App = () => {
             .catch(() => notifyError('creating blog failed'))
     }
 
-    const updateBlog = (id, blogObject) => {
-        console.log('updating blog', id, blogObject)
+    const incrementBlogLike = (id) => {
+        console.log('updating blog with id', id)
+
+        const blogIdx = blogs.findIndex(blog => blog.id === id)
+        const blogObject = blogs[blogIdx]
+        blogObject.likes += 1
+        setBlogs(sortBlogs(blogs.with(blogIdx, blogObject)))
+
+        console.log('updating blog object', blogObject)
+
         blogService
             .update(id, blogObject)
             .catch(() => {
@@ -132,7 +142,7 @@ const App = () => {
                     <BlogCreation submitBlog={createBlog} />
                 </Togglable>
                 {blogs.map(blog =>
-                    <Blog key={blog.id} blog={blog} updateFcn={updateBlog}/>
+                    <Blog key={blog.id} blog={blog} incrementLikesFcn={incrementBlogLike}/>
                 )}
             </div>
         )
