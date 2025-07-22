@@ -22,3 +22,10 @@ h2 {
 input, button {
     margin-bottom: 2px;
 }
+
+.blogBox {
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
