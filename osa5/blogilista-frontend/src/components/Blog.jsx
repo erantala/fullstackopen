@@ -1,11 +1,23 @@
 import {useState} from "react";
 
-const Blog = ({blog, incrementLikesFcn}) => {
+const Blog = ({blog, loggedUser, incrementLikesFcn, deleteBlog}) => {
     const [showDetails, setShowDetails] = useState(false);
 
     const userFullName = (user) => {
         return user ? user.name : (<span className='error'>Unknown User</span>);
     };
+
+    const isBlogOwner = (blogOwner) => {
+        return blogOwner && blogOwner.username === loggedUser.username;
+    }
+
+    const confirmDelete = () => {
+        if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
+            console.log(`Deleting blog with id ${blog.id}`);
+            deleteBlog(blog.id)
+        } else {
+            console.log(`Cancelled deleting blog ${blog.title}`);}
+    }
 
     return (
         <div className='blogBox'>
@@ -22,6 +34,9 @@ const Blog = ({blog, incrementLikesFcn}) => {
                     </button>
                     <br/>
                     {userFullName(blog.user)}
+                    <br/>
+                    {isBlogOwner(blog.user) &&
+                        <button onClick={confirmDelete}>remove</button>}
                 </div>
             }
         </div>

@@ -81,6 +81,16 @@ const App = () => {
             .catch(() => notifyError('creating blog failed'))
     }
 
+    const deleteBlog = (id) => {
+        blogService
+            .deleteById(id)
+            .then(() => {
+                setBlogs(blogs => blogs.filter(blog => blog.id !== id))
+                notifySuccess('blog deleted')
+            })
+            .catch(() => notifyError('deleting blog failed'))
+    }
+
     const incrementBlogLike = (id) => {
         console.log('updating blog with id', id)
 
@@ -109,7 +119,7 @@ const App = () => {
                 value={username}
                 name="username"
                 onChange={({target}) => setUsername(target.value)}
-            /><br />
+            /><br/>
             <label>password:</label>&nbsp;
             <input
                 type="password"
@@ -139,10 +149,15 @@ const App = () => {
                 </div>
                 <h2>blogs</h2>
                 <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-                    <BlogCreation submitBlog={createBlog} />
+                    <BlogCreation submitBlog={createBlog}/>
                 </Togglable>
                 {blogs.map(blog =>
-                    <Blog key={blog.id} blog={blog} incrementLikesFcn={incrementBlogLike}/>
+                    <Blog key={blog.id}
+                          blog={blog}
+                          loggedUser={user}
+                          incrementLikesFcn={incrementBlogLike}
+                          deleteBlog={deleteBlog}
+                    />
                 )}
             </div>
         )
