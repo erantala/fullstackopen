@@ -1,3 +1,5 @@
+const { expect } = require("vitest");
+
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -41,4 +43,13 @@ module.exports = {
     "react/react-in-jsx-scope": "off",
     "no-unused-vars": 0
   },
+  overrides: [
+    {
+      files: ['**/*.test.{js,jsx}'],
+      globals: {
+        test: 'readonly',
+        expect: 'readonly'
+      }
+    }
+  ]
 }
