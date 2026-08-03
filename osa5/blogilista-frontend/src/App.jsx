@@ -113,20 +113,25 @@ const App = () => {
 
   const loginForm = () => (
     <form onSubmit={handleLogin}>
-      <label>username:</label>&nbsp;
-      <input
-        type="text"
-        value={username}
-        name="username"
-        onChange={({ target }) => setUsername(target.value)}
-      /><br/>
-      <label>password:</label>&nbsp;
-      <input
-        type="password"
-        value={password}
-        name="password"
-        onChange={({ target }) => setPassword(target.value)}
-      />
+      <label>username
+        <span>&nbsp;</span>:
+        <input
+          type="text"
+          value={username}
+          name="username"
+          onChange={({ target }) => setUsername(target.value)}
+        />
+      </label>
+      <br />
+      <label>password
+        <span>:&nbsp;</span>
+        <input
+          type="password"
+          value={password}
+          name="password"
+          onChange={({ target }) => setPassword(target.value)}
+        />
+      </label>
       <button type="submit">login</button>
     </form>
   )
@@ -149,7 +154,7 @@ const App = () => {
         </div>
         <h2>blogs</h2>
         <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-          <BlogCreation submitBlog={createBlog}/>
+          <BlogCreation submitBlog={createBlog} />
         </Togglable>
         {blogs.map(blog =>
           <Blog key={blog.id}
@@ -165,7 +170,7 @@ const App = () => {
 
   return (
     <>
-      <Notification notification={notification}/>
+      <Notification notification={notification} />
       {
         pageView
       }
