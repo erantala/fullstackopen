@@ -73,5 +73,24 @@ describe('Blog app', () => {
       await expect(blogBox).toBeVisible()
       await expect(blogBox).toContainText(blog.title)
     })
+
+    describe('and a blog exists', () => {
+      beforeEach(async ({ page }) => {
+        const blog = {
+          title: 'Playwrights old and existing blog',
+          author: 'P. Lay Wright',
+          url: 'http://example.com/playwright-e2e-testing'
+        }
+        await createNewBlog(page, blog)
+      })
+
+      test('it can be liked', async ({ page }) => {
+        const blogBox = page.locator('.blogBox')
+        await blogBox.getByRole('button', { name: 'view' }).click()
+        await blogBox.getByRole('button', { name: 'like' }).click()
+
+        await expect(blogBox).toContainText('likes 1')
+      })
+    })
   })
 })
