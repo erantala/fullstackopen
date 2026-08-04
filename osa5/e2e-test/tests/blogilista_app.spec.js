@@ -91,6 +91,19 @@ describe('Blog app', () => {
 
         await expect(blogBox).toContainText('likes 1')
       })
+
+      test('it can be deleted', async ({ page }) => {
+        page.once('dialog', async dialog => {
+          await dialog.accept()
+        })
+
+        const blogBox = page.locator('.blogBox')
+        await blogBox.getByRole('button', { name: 'view' }).click()
+        await blogBox.getByRole('button', { name: 'remove' }).click()
+
+        await expect(blogBox).not.toBeVisible()
+        await expect(page.locator('.notification')).toContainText('blog deleted')
+      })
     })
   })
 })
