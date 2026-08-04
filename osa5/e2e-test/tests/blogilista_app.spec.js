@@ -16,6 +16,23 @@ const createNewBlog = async (page, blog) => {
   await page.getByText(blog.title).waitFor()
 }
 
+const loginViaApi = async (request, username, password) => {
+  const response = await request.post('/api/login', {
+    data: { username, password }
+  })
+  const responseBody = await response.json()
+  return responseBody.token
+}
+
+const createBlogViaApi = async (request, token, blog) => {
+  await request.post('/api/blogs', {
+    data: blog,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('http://localhost:3003/api/testing/reset')
@@ -23,7 +40,7 @@ describe('Blog app', () => {
       data: {
         name: 'P. Lay Wright',
         username: 'playwright',
-        password: 'playwleft-secret'
+        password: 'playwright-secret'
       }
     })
 
@@ -39,7 +56,7 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await loginWith(page, 'playwright', 'playwleft-secret')
+      await loginWith(page, 'playwright', 'playwright-secret')
       await page.getByText('login successful').waitFor()
 
       await expect(page.getByText('P. Lay Wright logged in')).toBeVisible()
@@ -58,7 +75,7 @@ describe('Blog app', () => {
 
   describe('When logged in', () => {
     beforeEach(async ({ page }) => {
-      await loginWith(page, 'playwright', 'playwleft-secret')
+      await loginWith(page, 'playwright', 'playwright-secret')
     })
 
     test('a new blog can be created', async ({ page }) => {
@@ -106,4 +123,65 @@ describe('Blog app', () => {
       })
     })
   })
+
+  describe('When another user and multiple blogs already exist', () => {
+    beforeEach(async ({ page, request }) => {
+      // playwright user already created in the outer beforeEach
+      const user_playwright = {
+        name: 'P. Lay Wright',
+        username: 'playwright',
+        password: 'playwright-secret'
+      }
+
+      const user_playwrong = {
+        name: 'Lay Wong',
+        username: 'laywong',
+        password: 'laywong-secret'
+      }
+
+      await request.post('/api/users', {
+        data: user_playwrong
+      })
+
+      const playwrightToken = await loginViaApi(request, user_playwright.username, user_playwright.password)
+      const playwrongToken = await loginViaApi(request, user_playwrong.username, user_playwrong.password)
+
+      await createBlogViaApi(request, playwrightToken, {
+        title: 'A Blog That I Created Earlier',
+        author: 'Peter Lay Wright',
+        url: 'http://example.com/owner-blog',
+        likes: 2
+      })
+
+      await createBlogViaApi(request, playwrongToken, {
+        title: 'Hands Off, Not Your Blog!',
+        author: 'P. Lay Wong',
+        url: 'http://example.com/another-user-blog',
+        likes: 5
+      })
+
+      await page.reload()
+    })
+
+    describe('when Mr. Wright has logged in', () => {
+      beforeEach(async ({ page }) => {
+        await loginWith(page, 'playwright', 'playwright-secret')
+        await expect(page.getByText('P. Lay Wright logged in')).toBeVisible()
+      })
+
+      test('only own blogs can be deleted', async ({ page }) => {
+        const blogBoxes = page.locator('.blogBox')
+        await expect(blogBoxes).toHaveCount(2)
+
+        const viewButtons = await blogBoxes.getByRole('button', { name: 'view' })
+        viewButtons.nth(0).click()
+        viewButtons.nth(1).click()
+
+        await expect(blogBoxes.filter({ hasText: 'A Blog That I Created Earlier' }).getByRole('button', { name: 'remove' })).toBeVisible()
+        await expect(blogBoxes.filter({ hasText: 'Hands Off, Not Your Blog!' }).getByRole('button', { name: 'remove' })).not.toBeVisible()
+      })
+    })
+
+  })
+
 })
