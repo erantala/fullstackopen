@@ -16,15 +16,26 @@ const BlogCreation = ({ submitBlog }) => {
 
   return (
     <div>
-      <h2>Create new blog</h2>
+      <h2 id='create-new-blog'>Create new blog</h2>
 
-      <form onSubmit={submitNewBlog}>
-        <label>title:</label>&nbsp;
-        <input type="text" name="title" value={title} onChange={({ target }) => setTitle(target.value)}/><br/>
-        <label>author:</label>&nbsp;
-        <input type="text" name="author" value={author} onChange={({ target }) => setAuthor(target.value)}/><br/>
-        <label>url:</label>&nbsp;
-        <input type="text" name="url" value={url} onChange={({ target }) => setUrl(target.value)}/><br/>
+      <form
+        aria-labelledby='create-new-blog'
+        onSubmit={submitNewBlog}>
+        <label>title
+          <span>:&nbsp;</span>
+          <input type="text" name="title" value={title} onChange={({ target }) => setTitle(target.value)} />
+        </label>
+        <br />
+        <label>author
+          <span>:&nbsp;</span>
+          <input type="text" name="author" value={author} onChange={({ target }) => setAuthor(target.value)} />
+        </label>
+        <br />
+        <label>url
+          <span>:&nbsp;</span>
+          <input type="text" name="url" value={url} onChange={({ target }) => setUrl(target.value)} />
+        </label>
+        <br />
         <button type="submit">
           create
         </button>
