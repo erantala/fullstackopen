@@ -180,8 +180,59 @@ describe('Blog app', () => {
         await expect(blogBoxes.filter({ hasText: 'A Blog That I Created Earlier' }).getByRole('button', { name: 'remove' })).toBeVisible()
         await expect(blogBoxes.filter({ hasText: 'Hands Off, Not Your Blog!' }).getByRole('button', { name: 'remove' })).not.toBeVisible()
       })
+
+      describe('and Mr Wright has created a new blog', () => {
+        beforeEach(async ({ page }) => {
+          await createNewBlog(page, {
+            title: 'My Newly Created Blog',
+            author: 'Alter Ego',
+            url: 'http://blog.ly'
+          })
+        })
+
+        test('blogs are ordered by likes in descending order', async ({ page }) => {
+          const blogBoxes = page.locator('.blogBox')
+          const blogCount = await blogBoxes.count()
+          expect(blogCount).toBe(3)
+
+          const viewButtons = await blogBoxes.getByRole('button', { name: 'view' })
+          await expect(viewButtons).toHaveCount(blogCount)
+
+          while (await viewButtons.count()) {
+            await viewButtons.first().click()
+          }
+
+          await expect(blogBoxes.getByRole('button', { name: 'hide' })).toHaveCount(blogCount)
+
+          const blogBoxesTextContents = await blogBoxes.allTextContents()
+          const likesArray = blogBoxesTextContents.map(textContent => parseInt(textContent.match(/likes (\d+)/)[1]))
+
+          expect(likesArray).toStrictEqual([5, 2, 0])
+        })
+
+        test('blogs are re-ordered after likes are incremented', async ({ page }) => {
+          const blogBoxes = page.locator('.blogBox')
+          const myNewlyCreatedBlog = blogBoxes.filter({ hasText: 'My Newly Created Blog' })
+
+          const viewButtons = await blogBoxes.getByRole('button', { name: 'view' })
+
+          while (await viewButtons.count()) {
+            await viewButtons.first().click()
+          }
+
+          const likeButton = myNewlyCreatedBlog.getByRole('button', { name: 'like' })
+          for (let i = 0; i < 3; i++) {
+            await likeButton.click()
+          }
+
+          const blogBoxesTextContents = await blogBoxes.allTextContents()
+          const likesArray = blogBoxesTextContents.map(textContent => parseInt(textContent.match(/likes (\d+)/)[1]))
+          expect(likesArray).toStrictEqual([5, 3, 2])
+          expect(blogBoxes.nth(1)).toContainText('My Newly Created Blog')
+        })
+      })
+
     })
 
   })
-
 })
